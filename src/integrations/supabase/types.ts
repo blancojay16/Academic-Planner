@@ -47,10 +47,61 @@ export type Database = {
         }
         Relationships: []
       }
+      flashcards: {
+        Row: {
+          answer: string
+          created_at: string
+          difficulty_level: string | null
+          file_id: string | null
+          id: string
+          last_reviewed: string | null
+          mastery_level: number | null
+          question: string
+          review_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          difficulty_level?: string | null
+          file_id?: string | null
+          id?: string
+          last_reviewed?: string | null
+          mastery_level?: number | null
+          question: string
+          review_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          difficulty_level?: string | null
+          file_id?: string | null
+          id?: string
+          last_reviewed?: string | null
+          mastery_level?: number | null
+          question?: string
+          review_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: string | null
           created_at: string
+          deadline: string | null
           id: string
           subject: string | null
           tags: string[] | null
@@ -61,6 +112,7 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string
+          deadline?: string | null
           id?: string
           subject?: string | null
           tags?: string[] | null
@@ -71,6 +123,7 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string
+          deadline?: string | null
           id?: string
           subject?: string | null
           tags?: string[] | null
