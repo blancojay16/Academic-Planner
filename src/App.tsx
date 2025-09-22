@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { AppSidebar } from "./components/AppSidebar";
+import { useNotifications } from "./hooks/useNotifications";
 import Dashboard from "./pages/Dashboard";
 import Schedule from "./pages/Schedule";
 import Notes from "./pages/Notes";
@@ -20,12 +21,18 @@ const queryClient = new QueryClient();
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { refreshNotifications } = useNotifications();
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Refresh notifications when user logs in
+      if (session?.user) {
+        refreshNotifications();
+      }
     });
 
     // Listen for auth changes

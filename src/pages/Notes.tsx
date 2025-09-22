@@ -16,6 +16,7 @@ interface Note {
   content?: string;
   subject?: string;
   tags?: string[];
+  deadline?: string;
   created_at: string;
   updated_at: string;
 }
@@ -33,7 +34,8 @@ export default function Notes() {
     title: '',
     content: '',
     subject: '',
-    tags: ''
+    tags: '',
+    deadline: ''
   });
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export default function Notes() {
             content: formData.content,
             subject: formData.subject || null,
             tags: tags.length > 0 ? tags : null,
+            deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
           })
           .eq('id', editingNote.id);
 
@@ -113,6 +116,7 @@ export default function Notes() {
             content: formData.content,
             subject: formData.subject || null,
             tags: tags.length > 0 ? tags : null,
+            deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
             user_id: user.id,
           });
 
@@ -137,7 +141,8 @@ export default function Notes() {
       title: note.title,
       content: note.content || '',
       subject: note.subject || '',
-      tags: note.tags?.join(', ') || ''
+      tags: note.tags?.join(', ') || '',
+      deadline: note.deadline ? new Date(note.deadline).toISOString().slice(0, 16) : ''
     });
     setIsDialogOpen(true);
   };
@@ -166,7 +171,8 @@ export default function Notes() {
       title: '',
       content: '',
       subject: '',
-      tags: ''
+      tags: '',
+      deadline: ''
     });
     setEditingNote(null);
     setIsDialogOpen(false);
@@ -276,6 +282,16 @@ export default function Notes() {
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="e.g., important, exam, review"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="deadline">Deadline (optional)</Label>
+                  <Input
+                    id="deadline"
+                    type="datetime-local"
+                    value={formData.deadline}
+                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                   />
                 </div>
                 

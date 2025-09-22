@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music } from "lucide-react";
+import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music, Brain, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import FlashcardViewer from "@/components/FlashcardViewer";
 
 interface FileItem {
   id: string;
@@ -23,6 +24,8 @@ export default function Files() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFileForFlashcards, setSelectedFileForFlashcards] = useState<string | null>(null);
+  const [generatingFlashcards, setGeneratingFlashcards] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,8 +109,14 @@ export default function Files() {
 
       if (dbError) throw dbError;
 
+      const fileId = await getUploadedFileId(fileName, user.id);
       toast({ title: "File uploaded successfully!" });
       fetchFiles();
+      
+      // Auto-generate flashcards for certain file types
+      if (shouldGenerateFlashcards(file.type, file.name)) {
+        await generateFlashcards(fileId, file.name);
+      }
     } catch (error: any) {
       toast({
         title: "Error uploading file",
@@ -211,12 +220,56 @@ export default function Files() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const getUploadedFileId = async (filePath: string, userId: string) => {
+    const { data, error } = await supabase
+      .from('files')
+      .select('id')
+      .eq('file_path', filePath)
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) throw error;
+    return data.id;
+  };
+
+  const shouldGenerateFlashcards = (fileType: string, fileName: string): boolean => {
+    const textTypes = ['text/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument'];
+    const studyExtensions = ['.txt', '.md', '.pdf', '.doc', '.docx', '.ppt', '.pptx'];
+    
+    return textTypes.some(type => fileType.includes(type)) || 
+           studyExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+  };
+
+  const generateFlashcards = async (fileId: string, fileName: string) => {
+    try {
+      setGeneratingFlashcards(fileId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase.functions.invoke('generate-flashcards', {
+        body: { fileId, userId: user.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Flashcards generated!",
+        description: `Created ${data.flashcards?.length || 0} flashcards from ${fileName}`,
+      });
+    } catch (error: any) {
+      console.error('Error generating flashcards:', error);
+      toast({
+        title: "Error generating flashcards",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingFlashcards(null);
+    }
+  };
+
+  const handleGenerateFlashcards = async (file: FileItem) => {
+    await generateFlashcards(file.id, file.name);
   };
 
   const formatDate = (dateString: string) => {
@@ -227,6 +280,14 @@ export default function Files() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (loading) {
@@ -357,6 +418,30 @@ export default function Files() {
                     >
                       <Download className="h-4 w-4 mr-1" />
                       Download
+                    </Button>
+                    {shouldGenerateFlashcards(file.file_type, file.name) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => generatingFlashcards === file.id ? null : handleGenerateFlashcards(file)}
+                        disabled={generatingFlashcards === file.id}
+                        className="shrink-0"
+                      >
+                        {generatingFlashcards === file.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-1" />
+                        ) : (
+                          <Sparkles className="h-4 w-4 mr-1" />
+                        )}
+                        {generatingFlashcards === file.id ? 'Generating...' : 'Flashcards'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedFileForFlashcards(file.id)}
+                      className="shrink-0"
+                    >
+                      <Brain className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
