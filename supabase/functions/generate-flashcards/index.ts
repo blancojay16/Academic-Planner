@@ -23,13 +23,13 @@ serve(async (req) => {
       );
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!openAIApiKey || !supabaseUrl || !supabaseServiceKey) {
+    if (!geminiApiKey || !supabaseUrl || !supabaseServiceKey) {
       console.error('Missing environment variables:', {
-        hasOpenAI: !!openAIApiKey,
+        hasGemini: !!geminiApiKey,
         hasSupabaseUrl: !!supabaseUrl,
         hasServiceKey: !!supabaseServiceKey
       });
@@ -41,8 +41,8 @@ serve(async (req) => {
 
     console.log('Starting flashcard generation for fileId:', fileId);
     console.log('Environment variables check:', {
-      hasOpenAI: !!openAIApiKey,
-      openAIKeyLength: openAIApiKey ? openAIApiKey.length : 0,
+      hasGemini: !!geminiApiKey,
+      geminiKeyLength: geminiApiKey ? geminiApiKey.length : 0,
       hasSupabaseUrl: !!supabaseUrl,
       hasServiceKey: !!supabaseServiceKey
     });
@@ -95,64 +95,67 @@ serve(async (req) => {
     // Limit content to avoid token limits
     const limitedContent = textContent.slice(0, 8000);
 
-    // Generate flashcards using OpenAI
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Generate flashcards using Google Gemini API
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
+        contents: [
           {
-            role: 'system',
-            content: `You are an educational AI assistant that creates flashcards for students. 
-            Based on the provided content, create exactly 5-10 flashcards that help students learn and review the material.
-            Each flashcard should have a clear question and a comprehensive answer.
-            
-            Return the response as a JSON array in this exact format:
-            [
+            parts: [
               {
-                "question": "Clear, specific question about the content",
-                "answer": "Detailed answer that explains the concept",
-                "difficulty": "easy|medium|hard"
+                text: `You are an educational AI assistant that creates flashcards for students. 
+Based on the provided content, create exactly 5-10 flashcards that help students learn and review the material.
+Each flashcard should have a clear question and a comprehensive answer.
+
+Return the response as a JSON array in this exact format:
+[
+  {
+    "question": "Clear, specific question about the content",
+    "answer": "Detailed answer that explains the concept",
+    "difficulty": "easy|medium|hard"
+  }
+]
+
+Make sure the questions test understanding, not just memorization. Include a mix of difficulty levels.
+
+Create flashcards from this content:
+
+${limitedContent}`
               }
             ]
-            
-            Make sure the questions test understanding, not just memorization. Include a mix of difficulty levels.`
-          },
-          {
-            role: 'user',
-            content: `Create flashcards from this content:\n\n${limitedContent}`
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.7,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2000,
+        }
       }),
     });
 
-    if (!openAIResponse.ok) {
-      const errorDetails = await openAIResponse.text();
-      console.error('OpenAI API error:', {
-        status: openAIResponse.status,
-        statusText: openAIResponse.statusText,
+    if (!geminiResponse.ok) {
+      const errorDetails = await geminiResponse.text();
+      console.error('Gemini API error:', {
+        status: geminiResponse.status,
+        statusText: geminiResponse.statusText,
         details: errorDetails
       });
       return new Response(
         JSON.stringify({ 
           error: 'Error generating flashcards', 
-          details: `OpenAI API returned ${openAIResponse.status}: ${openAIResponse.statusText}` 
+          details: `Gemini API returned ${geminiResponse.status}: ${geminiResponse.statusText}` 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const openAIData = await openAIResponse.json();
+    const geminiData = await geminiResponse.json();
     let flashcardsData;
 
     try {
-      const content = openAIData.choices[0].message.content;
+      const content = geminiData.candidates[0].content.parts[0].text;
       // Extract JSON from the response
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
@@ -161,8 +164,8 @@ serve(async (req) => {
         throw new Error('No JSON array found in response');
       }
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
-      console.log('Raw response:', openAIData.choices[0].message.content);
+      console.error('Error parsing Gemini response:', parseError);
+      console.log('Raw response:', geminiData.candidates[0]?.content?.parts[0]?.text || 'No content');
       return new Response(
         JSON.stringify({ error: 'Error processing flashcard data' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
