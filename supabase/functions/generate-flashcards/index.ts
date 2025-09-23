@@ -40,6 +40,12 @@ serve(async (req) => {
     }
 
     console.log('Starting flashcard generation for fileId:', fileId);
+    console.log('Environment variables check:', {
+      hasOpenAI: !!openAIApiKey,
+      openAIKeyLength: openAIApiKey ? openAIApiKey.length : 0,
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey
+    });
 
     // Initialize Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
