@@ -28,12 +28,18 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!openAIApiKey || !supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing environment variables');
+      console.error('Missing environment variables:', {
+        hasOpenAI: !!openAIApiKey,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+      });
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Starting flashcard generation for fileId:', fileId);
 
     // Initialize Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -121,9 +127,17 @@ serve(async (req) => {
     });
 
     if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', openAIResponse.statusText);
+      const errorDetails = await openAIResponse.text();
+      console.error('OpenAI API error:', {
+        status: openAIResponse.status,
+        statusText: openAIResponse.statusText,
+        details: errorDetails
+      });
       return new Response(
-        JSON.stringify({ error: 'Error generating flashcards' }),
+        JSON.stringify({ 
+          error: 'Error generating flashcards', 
+          details: `OpenAI API returned ${openAIResponse.status}: ${openAIResponse.statusText}` 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
