@@ -97,6 +97,51 @@ export type Database = {
           },
         ]
       }
+      grades: {
+        Row: {
+          category: string | null
+          course_code: string | null
+          course_name: string
+          created_at: string
+          credit_hours: number
+          grade_letter: string | null
+          grade_value: number | null
+          id: string
+          semester: string | null
+          updated_at: string
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          course_code?: string | null
+          course_name: string
+          created_at?: string
+          credit_hours?: number
+          grade_letter?: string | null
+          grade_value?: number | null
+          id?: string
+          semester?: string | null
+          updated_at?: string
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          course_code?: string | null
+          course_name?: string
+          created_at?: string
+          credit_hours?: number
+          grade_letter?: string | null
+          grade_value?: number | null
+          id?: string
+          semester?: string | null
+          updated_at?: string
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string | null
@@ -197,6 +242,36 @@ export type Database = {
           priority?: string | null
           start_time?: string
           title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_quotes: {
+        Row: {
+          author: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          quote_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          quote_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          quote_text?: string
           updated_at?: string
           user_id?: string
         }

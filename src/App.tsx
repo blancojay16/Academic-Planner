@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Schedule from "./pages/Schedule";
 import Notes from "./pages/Notes";
 import Files from "./pages/Files";
+import Grades from "./pages/Grades";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -83,6 +84,7 @@ const App = () => {
                   <Route path="/schedule" element={<Schedule />} />
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/files" element={<Files />} />
+                  <Route path="/grades" element={<Grades />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

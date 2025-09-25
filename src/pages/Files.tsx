@@ -458,6 +458,14 @@ export default function Files() {
           })}
         </div>
       )}
+
+      {/* Flashcard Viewer Modal */}
+      {selectedFileForFlashcards && (
+        <FlashcardViewer
+          fileId={selectedFileForFlashcards}
+          onClose={() => setSelectedFileForFlashcards(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Calendar, FileText, Upload, Home, LogOut, Settings } from "lucide-react";
+import { Calendar, FileText, Upload, Home, LogOut, Settings, Calculator } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ const navigationItems = [
   { title: "Schedule", url: "/schedule", icon: Calendar },
   { title: "Notes", url: "/notes", icon: FileText },
   { title: "Files", url: "/files", icon: Upload },
+  { title: "Grades", url: "/grades", icon: Calculator },
 ];
 
 export function AppSidebar() {
