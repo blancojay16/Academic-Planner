@@ -83,11 +83,11 @@ export function AppSidebar() {
         <div className="mt-auto p-4 space-y-2">
           <Button
             variant="ghost"
-            size="sm"
+            size="default"
             onClick={handleSignOut}
             className={`w-full justify-start hover:bg-sidebar-accent ${collapsed ? 'px-2' : ''}`}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
             {!collapsed && <span className="ml-2">Sign Out</span>}
           </Button>
         </div>
