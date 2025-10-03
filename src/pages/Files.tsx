@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music, Brain, Sparkles } from "lucide-react";
+import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music, Brain, Sparkles, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import FlashcardViewer from "@/components/FlashcardViewer";
+import { QuizViewer } from "@/components/QuizViewer";
 
 interface FileItem {
   id: string;
@@ -25,6 +26,8 @@ export default function Files() {
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFileForFlashcards, setSelectedFileForFlashcards] = useState<string | null>(null);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [generatingQuiz, setGeneratingQuiz] = useState<Record<string, boolean>>({});
   const [generatingFlashcards, setGeneratingFlashcards] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -268,6 +271,73 @@ export default function Files() {
     }
   };
 
+  const generateQuiz = async (file: FileItem) => {
+    try {
+      setGeneratingQuiz(prev => ({ ...prev, [file.id]: true }));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to generate a quiz",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: { fileId: file.id, userId: session.user.id }
+      });
+
+      if (error) throw error;
+
+      if (data?.quizId) {
+        toast({
+          title: "Quiz generated!",
+          description: `Created ${data.questionCount} questions from ${file.name}`,
+        });
+        setSelectedQuizId(data.quizId);
+      }
+    } catch (error: any) {
+      console.error('Error generating quiz:', error);
+      toast({
+        title: "Error generating quiz",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingQuiz(prev => ({ ...prev, [file.id]: false }));
+    }
+  };
+
+  const viewFileQuiz = async (fileId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('id')
+        .eq('file_id', fileId)
+        .single();
+
+      if (error) {
+        toast({
+          title: "No quiz found",
+          description: "Generate a quiz first",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedQuizId(data.id);
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      toast({
+        title: "Error loading quiz",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleGenerateFlashcards = async (file: FileItem) => {
     await generateFlashcards(file.id, file.name);
   };
@@ -409,45 +479,59 @@ export default function Files() {
                     <div>Uploaded: {formatDate(file.created_at)}</div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDownload(file)}
-                      className="flex-1"
+                      title="Download"
                     >
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
+                      <Download className="h-4 w-4" />
                     </Button>
                     {shouldGenerateFlashcards(file.file_type, file.name) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => generatingFlashcards === file.id ? null : handleGenerateFlashcards(file)}
-                        disabled={generatingFlashcards === file.id}
-                        className="shrink-0"
-                      >
-                        {generatingFlashcards === file.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-1" />
-                        ) : (
-                          <Sparkles className="h-4 w-4 mr-1" />
-                        )}
-                        {generatingFlashcards === file.id ? 'Generating...' : 'Flashcards'}
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => generatingFlashcards === file.id ? null : handleGenerateFlashcards(file)}
+                          disabled={generatingFlashcards === file.id}
+                          title="Generate Flashcards"
+                        >
+                          {generatingFlashcards === file.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                          ) : (
+                            <Sparkles className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedFileForFlashcards(file.id)}
+                          title="View Flashcards"
+                        >
+                          <Brain className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => generateQuiz(file)}
+                          disabled={generatingQuiz[file.id]}
+                          title="Generate Quiz"
+                        >
+                          {generatingQuiz[file.id] ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                          ) : (
+                            <BookOpen className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setSelectedFileForFlashcards(file.id)}
-                      className="shrink-0"
-                    >
-                      <Brain className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => handleDelete(file)}
-                      className="shrink-0 text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive"
+                      title="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -464,6 +548,14 @@ export default function Files() {
         <FlashcardViewer
           fileId={selectedFileForFlashcards}
           onClose={() => setSelectedFileForFlashcards(null)}
+        />
+      )}
+
+      {/* Quiz Viewer Modal */}
+      {selectedQuizId && (
+        <QuizViewer
+          quizId={selectedQuizId}
+          onClose={() => setSelectedQuizId(null)}
         />
       )}
     </div>
