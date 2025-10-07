@@ -66,9 +66,14 @@ Deno.serve(async (req) => {
     console.log('Text content extracted, length:', textContent.length);
 
     // Generate quiz using Gemini API
-    const prompt = `Based on the following content, generate a quiz with 5-10 multiple choice questions. 
-Each question should have 4 options (A, B, C, D) with only one correct answer.
-Also provide a brief explanation for each correct answer.
+    const prompt = `You are a quiz generator. Create a quiz with 5-10 multiple choice questions that are STRICTLY based on the content provided below.
+
+IMPORTANT RULES:
+- Generate questions ONLY from the information explicitly stated in the content
+- Do NOT add questions about general knowledge or topics not covered in the text
+- Every question must be directly answerable using only the provided content
+- Each question should have 4 options (A, B, C, D) with only one correct answer
+- Provide a brief explanation referencing where in the content the answer is found
 
 Format your response as a JSON array like this:
 [
