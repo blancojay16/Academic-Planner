@@ -1,5 +1,6 @@
 import "https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getDocument } from "npm:pdfjs-dist@4.0.379/legacy/build/pdf.mjs";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,9 +57,35 @@ Deno.serve(async (req) => {
     let textContent = '';
     
     if (fileData.file_type === 'application/pdf') {
-      const arrayBuffer = await fileContent.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      textContent = new TextDecoder().decode(uint8Array);
+      try {
+        const arrayBuffer = await fileContent.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Load PDF document
+        const loadingTask = getDocument({ data: uint8Array });
+        const pdfDocument = await loadingTask.promise;
+        
+        // Extract text from all pages
+        const numPages = pdfDocument.numPages;
+        const textPromises = [];
+        
+        for (let i = 1; i <= numPages; i++) {
+          textPromises.push(
+            pdfDocument.getPage(i).then(async (page) => {
+              const content = await page.getTextContent();
+              return content.items.map((item: any) => item.str).join(' ');
+            })
+          );
+        }
+        
+        const pageTexts = await Promise.all(textPromises);
+        textContent = pageTexts.join('\n\n');
+        
+        console.log('PDF text extracted, pages:', numPages, 'length:', textContent.length);
+      } catch (error) {
+        console.error('PDF parsing error:', error);
+        throw new Error('Failed to parse PDF content');
+      }
     } else {
       textContent = await fileContent.text();
     }
