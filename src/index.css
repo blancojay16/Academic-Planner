@@ -2,130 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Modern Academic App - White Blue Green Color Scheme
+/* Academic Scheduling App Design System
 All colors MUST be HSL for consistency.
-Fresh, clean design with vibrant blue and green accents on crisp white.
+Color palette inspired by academic environments - calm blues and greens with warm accents.
 */
 
 @layer base {
   :root {
-    /* Base colors - Pure white with subtle cool undertones */
-    --background: 0 0% 100%;
-    --foreground: 210 20% 15%;
+    /* Base colors - Clean academic whites with warm undertones */
+    --background: 220 20% 98%;
+    --foreground: 220 15% 15%;
 
-    /* Card colors - Soft white with hint of blue */
-    --card: 210 25% 98%;
-    --card-foreground: 210 20% 15%;
+    /* Card colors - Slightly cooler than background for depth */
+    --card: 220 25% 96%;
+    --card-foreground: 220 15% 15%;
 
     /* Popover colors */
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 15%;
+    --popover: 220 25% 96%;
+    --popover-foreground: 220 15% 15%;
 
-    /* Primary - Vibrant sky blue for main actions */
-    --primary: 205 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 205 100% 65%;
+    /* Primary - Academic blue for focus and important actions */
+    --primary: 210 100% 45%;
+    --primary-foreground: 220 20% 98%;
+    --primary-glow: 210 100% 60%;
 
-    /* Secondary - Fresh ocean blue */
-    --secondary: 200 90% 92%;
-    --secondary-foreground: 205 100% 40%;
+    /* Secondary - Soft academic gray for secondary actions */
+    --secondary: 220 15% 90%;
+    --secondary-foreground: 220 15% 25%;
 
-    /* Muted - Soft blue-gray for backgrounds */
-    --muted: 210 30% 95%;
-    --muted-foreground: 210 15% 45%;
+    /* Muted - For subtle backgrounds and disabled states */
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 10% 50%;
 
-    /* Accent - Vibrant emerald green for highlights */
-    --accent: 160 80% 45%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Academic green for success states and highlights */
+    --accent: 150 60% 45%;
+    --accent-foreground: 220 20% 98%;
 
-    /* Destructive - Coral red for warnings */
-    --destructive: 0 75% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Destructive - Academic red for warnings */
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 220 20% 98%;
 
     /* Border and input styling */
-    --border: 210 25% 88%;
-    --input: 210 30% 92%;
-    --ring: 205 100% 50%;
+    --border: 220 15% 85%;
+    --input: 220 15% 88%;
+    --ring: 210 100% 45%;
 
-    /* Modern gradients - Blue to green */
-    --gradient-primary: linear-gradient(135deg, hsl(205 100% 50%), hsl(205 100% 65%));
-    --gradient-academic: linear-gradient(135deg, hsl(205 100% 50%), hsl(160 80% 45%));
-    --gradient-subtle: linear-gradient(180deg, hsl(210 25% 98%), hsl(0 0% 100%));
-    --gradient-ocean: linear-gradient(135deg, hsl(200 90% 92%), hsl(160 80% 90%));
+    /* Academic gradients for visual interest */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 45%), hsl(210 100% 60%));
+    --gradient-academic: linear-gradient(135deg, hsl(210 100% 45%), hsl(150 60% 45%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 25% 96%), hsl(220 20% 94%));
 
-    /* Shadows with blue tint */
-    --shadow-academic: 0 8px 24px hsl(205 100% 50% / 0.12);
-    --shadow-soft: 0 2px 12px hsl(210 30% 20% / 0.06);
-    --shadow-elevated: 0 12px 32px hsl(205 100% 50% / 0.15);
+    /* Shadows with academic blue tint */
+    --shadow-academic: 0 4px 16px hsl(210 100% 45% / 0.15);
+    --shadow-soft: 0 2px 8px hsl(220 15% 15% / 0.08);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Sidebar colors - Clean white with blue accents */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 20% 20%;
-    --sidebar-primary: 205 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 205 100% 96%;
-    --sidebar-accent-foreground: 205 100% 40%;
-    --sidebar-border: 210 25% 90%;
-    --sidebar-ring: 205 100% 50%;
+    /* Sidebar colors - Academic theme */
+    --sidebar-background: 220 25% 96%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 210 100% 45%;
+    --sidebar-primary-foreground: 220 20% 98%;
+    --sidebar-accent: 220 15% 90%;
+    --sidebar-accent-foreground: 220 15% 25%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 210 100% 45%;
   }
 
   .dark {
-    /* Dark theme - Deep blue-gray with vibrant accents */
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    /* Dark theme - Academic midnight with warm undertones */
+    --background: 220 25% 8%;
+    --foreground: 220 15% 90%;
 
-    --card: 215 28% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 220 25% 10%;
+    --card-foreground: 220 15% 90%;
 
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 220 15% 90%;
 
-    --primary: 205 100% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 205 100% 70%;
+    --primary: 210 100% 60%;
+    --primary-foreground: 220 25% 8%;
+    --primary-glow: 210 100% 70%;
 
-    --secondary: 200 50% 20%;
-    --secondary-foreground: 200 90% 80%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 220 15% 85%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 160 80% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 150 60% 55%;
+    --accent-foreground: 220 25% 8%;
 
-    --destructive: 0 75% 65%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 70% 65%;
+    --destructive-foreground: 220 25% 8%;
 
-    --border: 215 25% 20%;
-    --input: 215 25% 18%;
-    --ring: 205 100% 55%;
+    --border: 220 15% 20%;
+    --input: 220 15% 18%;
+    --ring: 210 100% 60%;
 
     /* Dark theme gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(205 100% 55%), hsl(205 100% 70%));
-    --gradient-academic: linear-gradient(135deg, hsl(205 100% 55%), hsl(160 80% 50%));
-    --gradient-subtle: linear-gradient(180deg, hsl(215 28% 12%), hsl(215 30% 8%));
-    --gradient-ocean: linear-gradient(135deg, hsl(200 50% 20%), hsl(160 50% 25%));
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%), hsl(210 100% 70%));
+    --gradient-academic: linear-gradient(135deg, hsl(210 100% 60%), hsl(150 60% 55%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 25% 10%), hsl(220 25% 8%));
 
-    /* Dark shadows with blue glow */
-    --shadow-academic: 0 8px 24px hsl(205 100% 50% / 0.25);
-    --shadow-soft: 0 2px 12px hsl(215 30% 8% / 0.5);
-    --shadow-elevated: 0 12px 32px hsl(205 100% 50% / 0.3);
+    /* Dark shadows with academic blue glow */
+    --shadow-academic: 0 4px 16px hsl(210 100% 60% / 0.25);
+    --shadow-soft: 0 2px 8px hsl(220 25% 8% / 0.5);
 
     /* Sidebar dark theme */
-    --sidebar-background: 215 28% 12%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 205 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 18%;
-    --sidebar-accent-foreground: 200 90% 80%;
-    --sidebar-border: 215 25% 20%;
-    --sidebar-ring: 205 100% 55%;
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 220 15% 85%;
+    --sidebar-primary: 210 100% 60%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 220 15% 20%;
+    --sidebar-accent-foreground: 220 15% 85%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 210 100% 60%;
   }
 }
 

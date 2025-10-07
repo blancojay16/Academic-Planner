@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
-import StudyAssistant from "@/components/StudyAssistant";
 
 interface DashboardStats {
   schedules: number;
@@ -177,9 +176,6 @@ export default function Dashboard() {
           </Button>
         </CardContent>
       </Card>
-
-      {/* AI Study Assistant */}
-      <StudyAssistant />
 
       {/* Motivational Quote */}
       <MotivationalQuote />
