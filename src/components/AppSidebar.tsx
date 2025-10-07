@@ -53,32 +53,32 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={`${collapsed ? "w-16" : "w-72"} border-r bg-sidebar/95 backdrop-blur-xl supports-[backdrop-filter]:bg-sidebar/80 transition-all duration-300`}
+      className={`${collapsed ? "w-16" : "w-72"} border-r border-border/50 bg-sidebar shadow-xl transition-all duration-300`}
       collapsible="icon"
     >
-      <SidebarContent className="p-3">
-        <div className="mb-6 px-2">
-          <div className="flex items-center justify-center h-12 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg">
+      <SidebarContent className="p-4">
+        <div className="mb-8 px-2">
+          <div className="flex items-center justify-center h-14 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent shadow-elevated">
             {!collapsed && (
-              <span className="text-sm font-bold text-white tracking-wide">
-                AP
+              <span className="text-lg font-bold text-white tracking-wider">
+                StudyHub
               </span>
             )}
             {collapsed && (
-              <span className="text-xs font-bold text-white">
-                A
+              <span className="text-sm font-bold text-white">
+                SH
               </span>
             )}
           </div>
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60 font-medium text-xs uppercase tracking-wider mb-3 px-2">
+          <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider mb-4 px-2">
             {!collapsed && "Navigation"}
           </SidebarGroupLabel>
           
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -86,15 +86,15 @@ export function AppSidebar() {
                       to={item.url} 
                       end 
                       className={({ isActive }) => 
-                        `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                        `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-medium transition-all duration-300 ${
                           isActive 
-                            ? "bg-gradient-to-r from-primary to-accent text-white shadow-md transform scale-[1.02]" 
-                            : "hover:bg-sidebar-accent/70 text-sidebar-foreground hover:transform hover:scale-[1.02]"
+                            ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30 scale-[1.02]" 
+                            : "text-sidebar-foreground hover:bg-gradient-ocean hover:text-primary hover:shadow-md hover:scale-[1.01]"
                         }`
                       }
                     >
-                      <item.icon className={`h-5 w-5 ${collapsed ? 'mx-auto' : ''}`} />
-                      {!collapsed && <span className="font-medium">{item.title}</span>}
+                      <item.icon className={`h-5 w-5 ${collapsed ? 'mx-auto' : ''}`} strokeWidth={2.5} />
+                      {!collapsed && <span className="text-[15px]">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -103,17 +103,17 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <div className="mt-auto pt-6 border-t border-sidebar-border">
+        <div className="mt-auto pt-6 border-t border-border/50">
           <Button
             variant="ghost"
             size="default"
             onClick={handleSignOut}
-            className={`w-full justify-start rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all duration-200 ${
-              collapsed ? 'px-2' : 'px-3'
+            className={`w-full justify-start rounded-2xl hover:bg-destructive/10 hover:text-destructive font-medium transition-all duration-300 ${
+              collapsed ? 'px-2' : 'px-4'
             }`}
           >
-            <LogOut className={`h-5 w-5 ${collapsed ? 'mx-auto' : ''}`} />
-            {!collapsed && <span className="ml-3 font-medium">Sign Out</span>}
+            <LogOut className={`h-5 w-5 ${collapsed ? 'mx-auto' : ''}`} strokeWidth={2.5} />
+            {!collapsed && <span className="ml-4 text-[15px]">Sign Out</span>}
           </Button>
         </div>
       </SidebarContent>
