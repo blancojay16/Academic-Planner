@@ -1,4 +1,4 @@
-import { Calendar, FileText, Upload, Home, Calculator, Camera } from "lucide-react";
+import { Calendar, FileText, Upload, Home, User, Camera } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useRef } from "react";
@@ -16,8 +16,7 @@ const navigationItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Schedule", url: "/schedule", icon: Calendar },
   { title: "Notes", url: "/notes", icon: FileText },
-  { title: "Files", url: "/files", icon: Upload },
-  { title: "Grades", url: "/grades", icon: Calculator },
+  { title: "Profile", url: "/profile", icon: User },
 ];
 
 export function BottomNav() {

@@ -5,8 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 export const useNotifications = () => {
   useEffect(() => {
     const initializeNotifications = async () => {
-      await notificationService.initialize();
-      await notificationService.refreshAllNotifications();
+      try {
+        await notificationService.initialize();
+        await notificationService.refreshAllNotifications();
+      } catch (error) {
+        console.error('Failed to initialize notifications:', error);
+        // Don't block app startup if notifications fail
+      }
     };
 
     initializeNotifications();

@@ -16,11 +16,18 @@ class NotificationService {
 
   async initialize() {
     if (!Capacitor.isNativePlatform() || this.isInitialized) {
+      console.log('Skipping notification init: not native platform or already initialized');
       return;
     }
 
     try {
-      // Request permissions
+      // Request local notification permissions first
+      const localPerms = await LocalNotifications.requestPermissions();
+      if (localPerms.display === 'granted') {
+        console.log('Local notifications permissions granted');
+      }
+
+      // Request push permissions
       const { receive } = await PushNotifications.requestPermissions();
       
       if (receive === 'granted') {
@@ -37,15 +44,10 @@ class NotificationService {
         });
       }
 
-      // Request local notification permissions
-      const localPerms = await LocalNotifications.requestPermissions();
-      if (localPerms.display === 'granted') {
-        console.log('Local notifications permissions granted');
-      }
-
       this.isInitialized = true;
     } catch (error) {
       console.error('Error initializing notifications:', error);
+      // Don't throw - allow app to continue
     }
   }
 
