@@ -103,75 +103,75 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Academic Dashboard</h1>
-          <p className="text-muted-foreground">Manage your academic schedule, notes, and files</p>
+          <h1 className="text-2xl font-bold text-foreground">Academic Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Manage your academic schedule, notes, and files</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-soft">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Schedule Events</CardTitle>
-            <Calendar className="h-4 w-4 text-primary" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-4">
+            <CardTitle className="text-xs font-medium">Schedule Events</CardTitle>
+            <Calendar className="h-3 w-3 text-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">{stats.schedules}</div>
-            <p className="text-xs text-muted-foreground">Total scheduled events</p>
+          <CardContent className="p-4 pt-0">
+            <div className="text-xl font-bold text-primary">{stats.schedules}</div>
+            <p className="text-[10px] text-muted-foreground">Total scheduled events</p>
           </CardContent>
         </Card>
         
         <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-soft">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Notes</CardTitle>
-            <FileText className="h-4 w-4 text-accent" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-4">
+            <CardTitle className="text-xs font-medium">Notes</CardTitle>
+            <FileText className="h-3 w-3 text-accent" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-accent">{stats.notes}</div>
-            <p className="text-xs text-muted-foreground">Total notes created</p>
+          <CardContent className="p-4 pt-0">
+            <div className="text-xl font-bold text-accent">{stats.notes}</div>
+            <p className="text-[10px] text-muted-foreground">Total notes created</p>
           </CardContent>
         </Card>
         
         <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-soft">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Files</CardTitle>
-            <Upload className="h-4 w-4 text-secondary-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-4">
+            <CardTitle className="text-xs font-medium">Files</CardTitle>
+            <Upload className="h-3 w-3 text-secondary-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-secondary-foreground">{stats.files}</div>
-            <p className="text-xs text-muted-foreground">Files uploaded</p>
+          <CardContent className="p-4 pt-0">
+            <div className="text-xl font-bold text-secondary-foreground">{stats.files}</div>
+            <p className="text-[10px] text-muted-foreground">Files uploaded</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick Actions */}
       <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-primary" />
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Plus className="h-4 w-4 text-primary" />
             Quick Actions
           </CardTitle>
-          <CardDescription>Get started with common tasks</CardDescription>
+          <CardDescription className="text-xs">Get started with common tasks</CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-4 flex-wrap">
-          <Button asChild className="bg-primary hover:bg-primary/90">
+        <CardContent className="flex gap-2 flex-wrap p-4 pt-2">
+          <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
             <Link to="/schedule">
-              <Calendar className="h-4 w-4 mr-2" />
+              <Calendar className="h-3 w-3 mr-1" />
               Add Event
             </Link>
           </Button>
-          <Button asChild variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+          <Button asChild size="sm" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link to="/notes">
-              <FileText className="h-4 w-4 mr-2" />
+              <FileText className="h-3 w-3 mr-1" />
               Create Note
             </Link>
           </Button>
-          <Button asChild variant="outline" className="border-secondary-foreground/50 hover:bg-secondary">
+          <Button asChild size="sm" variant="outline" className="border-secondary-foreground/50 hover:bg-secondary">
             <Link to="/files">
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className="h-3 w-3 mr-1" />
               Upload File
             </Link>
           </Button>
@@ -186,37 +186,37 @@ export default function Dashboard() {
 
       {/* Upcoming Events */}
       <Card>
-        <CardHeader>
-          <CardTitle>Upcoming Events</CardTitle>
-          <CardDescription>Your next 5 scheduled events</CardDescription>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-base">Upcoming Events</CardTitle>
+          <CardDescription className="text-xs">Your next 5 scheduled events</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-2">
           {stats.upcomingEvents.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No upcoming events scheduled</p>
-              <Button asChild className="mt-4" variant="outline">
+            <div className="text-center py-4 text-muted-foreground">
+              <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No upcoming events scheduled</p>
+              <Button asChild className="mt-2" size="sm" variant="outline">
                 <Link to="/schedule">Create your first event</Link>
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {stats.upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div className="space-y-1">
-                    <h4 className="font-medium">{event.title}</h4>
-                    <p className="text-sm text-muted-foreground">{formatDate(event.start_time)}</p>
+                <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div className="space-y-0.5">
+                    <h4 className="text-sm font-medium">{event.title}</h4>
+                    <p className="text-xs text-muted-foreground">{formatDate(event.start_time)}</p>
                     {event.location && (
-                      <p className="text-xs text-muted-foreground">📍 {event.location}</p>
+                      <p className="text-[10px] text-muted-foreground">📍 {event.location}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getPriorityColor(event.priority)}>{event.priority}</Badge>
-                    <Badge variant="outline">{event.category}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={getPriorityColor(event.priority)} className="text-[10px] px-1.5 py-0">{event.priority}</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{event.category}</Badge>
                   </div>
                 </div>
               ))}
-              <Button asChild variant="outline" className="w-full mt-4">
+              <Button asChild variant="outline" size="sm" className="w-full mt-2">
                 <Link to="/schedule">View All Events</Link>
               </Button>
             </div>
