@@ -112,14 +112,8 @@ export default function Files() {
 
       if (dbError) throw dbError;
 
-      const fileId = await getUploadedFileId(fileName, user.id);
       toast({ title: "File uploaded successfully!" });
       fetchFiles();
-      
-      // Auto-generate flashcards for certain file types
-      if (shouldGenerateFlashcards(file.type, file.name)) {
-        await generateFlashcards(fileId, file.name);
-      }
     } catch (error: any) {
       toast({
         title: "Error uploading file",
