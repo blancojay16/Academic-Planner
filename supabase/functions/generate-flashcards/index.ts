@@ -23,16 +23,12 @@ serve(async (req) => {
       );
     }
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!geminiApiKey || !supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing environment variables:', {
-        hasGemini: !!geminiApiKey,
-        hasSupabaseUrl: !!supabaseUrl,
-        hasServiceKey: !!supabaseServiceKey
-      });
+    if (!lovableApiKey || !supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing environment variables');
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -40,12 +36,6 @@ serve(async (req) => {
     }
 
     console.log('Starting flashcard generation for fileId:', fileId);
-    console.log('Environment variables check:', {
-      hasGemini: !!geminiApiKey,
-      geminiKeyLength: geminiApiKey ? geminiApiKey.length : 0,
-      hasSupabaseUrl: !!supabaseUrl,
-      hasServiceKey: !!supabaseServiceKey
-    });
 
     // Initialize Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -95,68 +85,53 @@ serve(async (req) => {
     // Limit content to avoid token limits
     const limitedContent = textContent.slice(0, 8000);
 
-    // Generate flashcards using Google Gemini API
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
+    // Generate flashcards using Lovable AI Gateway
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
+        model: 'google/gemini-2.5-flash',
+        messages: [
           {
-            parts: [
-              {
-                text: `You are an educational AI assistant that creates flashcards for students. 
-Based on the provided content, create exactly 5-10 flashcards that help students learn and review the material.
-Each flashcard should have a clear question and a comprehensive answer.
-
-Return the response as a JSON array in this exact format:
+            role: 'system',
+            content: 'You are an educational AI assistant that creates flashcards. Always respond with valid JSON array format.'
+          },
+          {
+            role: 'user',
+            content: `Create exactly 5-10 flashcards from this content. Return ONLY a JSON array with this format:
 [
   {
-    "question": "Clear, specific question about the content",
-    "answer": "Detailed answer that explains the concept",
+    "question": "Clear question",
+    "answer": "Detailed answer",
     "difficulty": "easy|medium|hard"
   }
 ]
 
-Make sure the questions test understanding, not just memorization. Include a mix of difficulty levels.
-
-Create flashcards from this content:
-
-${limitedContent}`
-              }
-            ]
+Content: ${limitedContent}`
           }
         ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2000,
-        }
+        temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
-    if (!geminiResponse.ok) {
-      const errorDetails = await geminiResponse.text();
-      console.error('Gemini API error:', {
-        status: geminiResponse.status,
-        statusText: geminiResponse.statusText,
-        details: errorDetails
-      });
+    if (!aiResponse.ok) {
+      const errorDetails = await aiResponse.text();
+      console.error('AI API error:', errorDetails);
       return new Response(
-        JSON.stringify({ 
-          error: 'Error generating flashcards', 
-          details: `Gemini API returned ${geminiResponse.status}: ${geminiResponse.statusText}` 
-        }),
+        JSON.stringify({ error: 'Error generating flashcards' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const geminiData = await geminiResponse.json();
+    const aiData = await aiResponse.json();
     let flashcardsData;
 
     try {
-      const content = geminiData.candidates[0].content.parts[0].text;
-      // Extract JSON from the response
+      const content = aiData.choices[0].message.content;
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         flashcardsData = JSON.parse(jsonMatch[0]);
@@ -164,8 +139,7 @@ ${limitedContent}`
         throw new Error('No JSON array found in response');
       }
     } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      console.log('Raw response:', geminiData.candidates[0]?.content?.parts[0]?.text || 'No content');
+      console.error('Error parsing AI response:', parseError);
       return new Response(
         JSON.stringify({ error: 'Error processing flashcard data' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
