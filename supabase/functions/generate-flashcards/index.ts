@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import * as pdfjsLib from 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -74,13 +75,35 @@ serve(async (req) => {
     
     if (fileData.file_type.includes('text/') || fileData.name.endsWith('.txt') || fileData.name.endsWith('.md')) {
       textContent = await fileBlob.text();
+      console.log('Text content extracted, length:', textContent.length);
     } else if (fileData.file_type.includes('application/pdf')) {
-      // For PDF files, we'll use a simple approach - in production, you'd want to use a PDF parser
-      textContent = `PDF file: ${fileData.name}. Please provide study material for flashcard generation.`;
+      // Extract text from PDF
+      const arrayBuffer = await fileBlob.arrayBuffer();
+      const typedArray = new Uint8Array(arrayBuffer);
+      
+      const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+      const pdfDocument = await loadingTask.promise;
+      
+      const numPages = pdfDocument.numPages;
+      const textPages: string[] = [];
+      
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdfDocument.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        textPages.push(pageText);
+      }
+      
+      textContent = textPages.join('\n\n');
+      console.log('PDF text extracted, pages:', numPages, 'length:', textContent.length);
     } else {
       // For other file types, use filename as context
       textContent = `Study material from file: ${fileData.name}. Generate educational flashcards based on the subject matter suggested by the filename.`;
     }
+    
+    console.log('Text content extracted, length:', textContent.length);
 
     // Limit content to avoid token limits
     const limitedContent = textContent.slice(0, 8000);
