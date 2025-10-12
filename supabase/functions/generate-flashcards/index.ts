@@ -23,11 +23,11 @@ serve(async (req) => {
       );
     }
 
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!lovableApiKey || !supabaseUrl || !supabaseServiceKey) {
+    if (!geminiApiKey || !supabaseUrl || !supabaseServiceKey) {
       console.error('Missing environment variables');
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
@@ -85,61 +85,73 @@ serve(async (req) => {
     // Limit content to avoid token limits
     const limitedContent = textContent.slice(0, 8000);
 
-    // Generate flashcards using Lovable AI Gateway
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an educational AI assistant that creates flashcards. Always respond with valid JSON array format.'
-          },
-          {
-            role: 'user',
-            content: `Create exactly 5-10 flashcards from this content. Return ONLY a JSON array with this format:
+    // Generate flashcards using Google Gemini API
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Create exactly 5-10 educational flashcards from this content. You MUST respond with ONLY a valid JSON array, no other text.
+
+Format:
 [
   {
-    "question": "Clear question",
+    "question": "Clear, specific question",
     "answer": "Detailed answer",
-    "difficulty": "easy|medium|hard"
+    "difficulty": "easy"
   }
 ]
 
 Content: ${limitedContent}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json"
           }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+        })
+      }
+    );
 
-    if (!aiResponse.ok) {
-      const errorDetails = await aiResponse.text();
-      console.error('AI API error:', errorDetails);
+    if (!geminiResponse.ok) {
+      const errorText = await geminiResponse.text();
+      console.error('Gemini API error:', errorText);
       return new Response(
         JSON.stringify({ error: 'Error generating flashcards' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const aiData = await aiResponse.json();
+    const geminiData = await geminiResponse.json();
     let flashcardsData;
 
     try {
-      const content = aiData.choices[0].message.content;
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        flashcardsData = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON array found in response');
+      const content = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!content) throw new Error('No content in response');
+      
+      // Try to parse directly first (since we specified JSON mime type)
+      try {
+        flashcardsData = JSON.parse(content);
+      } catch {
+        // Fallback: extract JSON array from text
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          flashcardsData = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON array found');
+        }
+      }
+      
+      if (!Array.isArray(flashcardsData) || flashcardsData.length === 0) {
+        throw new Error('Invalid flashcard data format');
       }
     } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
+      console.error('Error parsing response:', parseError);
+      console.log('Raw response:', geminiData);
       return new Response(
         JSON.stringify({ error: 'Error processing flashcard data' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
