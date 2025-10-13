@@ -3,8 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import * as pdfjsLib from 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs';
 
-// Configure PDF.js worker for Deno environment
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.worker.mjs';
+// Disable worker for Deno environment to avoid worker loading issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,10 +81,16 @@ serve(async (req) => {
       console.log('Text content extracted, length:', textContent.length);
     } else if (fileData.file_type.includes('application/pdf')) {
       // Extract text from PDF
+      console.log('Processing PDF file...');
       const arrayBuffer = await fileBlob.arrayBuffer();
       const typedArray = new Uint8Array(arrayBuffer);
       
-      const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: typedArray,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true
+      });
       const pdfDocument = await loadingTask.promise;
       
       const numPages = pdfDocument.numPages;
