@@ -320,6 +320,44 @@ export type Database = {
         }
         Relationships: []
       }
+      summaries: {
+        Row: {
+          content: string
+          created_at: string
+          file_id: string | null
+          id: string
+          summary_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          file_id?: string | null
+          id?: string
+          summary_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          file_id?: string | null
+          id?: string
+          summary_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "summaries_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_quotes: {
         Row: {
           author: string | null

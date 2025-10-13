@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music, Brain, Sparkles, BookOpen } from "lucide-react";
+import { Upload, FileText, Download, Trash2, Search, File, Image, Video, Music, Sparkles, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import FlashcardViewer from "@/components/FlashcardViewer";
+import SummaryViewer from "@/components/SummaryViewer";
 import { QuizViewer } from "@/components/QuizViewer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FileItem {
   id: string;
@@ -25,10 +32,11 @@ export default function Files() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFileForFlashcards, setSelectedFileForFlashcards] = useState<string | null>(null);
+  const [selectedFileForSummary, setSelectedFileForSummary] = useState<string | null>(null);
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
   const [generatingQuiz, setGeneratingQuiz] = useState<Record<string, boolean>>({});
-  const [generatingFlashcards, setGeneratingFlashcards] = useState<string | null>(null);
+  const [generatingSummary, setGeneratingSummary] = useState<string | null>(null);
+  const [summaryType, setSummaryType] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -229,7 +237,7 @@ export default function Files() {
     return data.id;
   };
 
-  const shouldGenerateFlashcards = (fileType: string, fileName: string): boolean => {
+  const shouldGenerateSummary = (fileType: string, fileName: string): boolean => {
     const textTypes = ['text/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument'];
     const studyExtensions = ['.txt', '.md', '.pdf', '.doc', '.docx', '.ppt', '.pptx'];
     
@@ -237,31 +245,33 @@ export default function Files() {
            studyExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
   };
 
-  const generateFlashcards = async (fileId: string, fileName: string) => {
+  const generateSummary = async (fileId: string, fileName: string, type: string) => {
     try {
-      setGeneratingFlashcards(fileId);
+      setGeneratingSummary(fileId);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase.functions.invoke('generate-flashcards', {
-        body: { fileId, userId: user.id }
+      const { data, error } = await supabase.functions.invoke('generate-summary', {
+        body: { fileId, userId: user.id, summaryType: type }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Flashcards generated!",
-        description: `Created ${data.flashcards?.length || 0} flashcards from ${fileName}`,
+        title: "Summary generated!",
+        description: `Created ${type.replace('_', ' ')} from ${fileName}`,
       });
+      
+      setSelectedFileForSummary(fileId);
     } catch (error: any) {
-      console.error('Error generating flashcards:', error);
+      console.error('Error generating summary:', error);
       toast({
-        title: "Error generating flashcards",
+        title: "Error generating summary",
         description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
-      setGeneratingFlashcards(null);
+      setGeneratingSummary(null);
     }
   };
 
@@ -332,8 +342,9 @@ export default function Files() {
     }
   };
 
-  const handleGenerateFlashcards = async (file: FileItem) => {
-    await generateFlashcards(file.id, file.name);
+  const handleGenerateSummary = async (file: FileItem) => {
+    const type = summaryType[file.id] || 'concise';
+    await generateSummary(file.id, file.name, type);
   };
 
   const formatDate = (dateString: string) => {
@@ -482,16 +493,29 @@ export default function Files() {
                     >
                       <Download className="h-4 w-4" />
                     </Button>
-                    {shouldGenerateFlashcards(file.file_type, file.name) && (
-                      <>
+                    {shouldGenerateSummary(file.file_type, file.name) && (
+                      <div className="flex gap-2 items-center flex-wrap w-full">
+                        <Select
+                          value={summaryType[file.id] || 'concise'}
+                          onValueChange={(value) => setSummaryType(prev => ({ ...prev, [file.id]: value }))}
+                        >
+                          <SelectTrigger className="w-[140px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="concise">Concise</SelectItem>
+                            <SelectItem value="bullet_points">Bullet Points</SelectItem>
+                            <SelectItem value="key_definitions">Key Definitions</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => generatingFlashcards === file.id ? null : handleGenerateFlashcards(file)}
-                          disabled={generatingFlashcards === file.id}
-                          title="Generate Flashcards"
+                          onClick={() => generatingSummary === file.id ? null : handleGenerateSummary(file)}
+                          disabled={generatingSummary === file.id}
+                          title="Generate Summary"
                         >
-                          {generatingFlashcards === file.id ? (
+                          {generatingSummary === file.id ? (
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
                           ) : (
                             <Sparkles className="h-4 w-4" />
@@ -500,10 +524,10 @@ export default function Files() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedFileForFlashcards(file.id)}
-                          title="View Flashcards"
+                          onClick={() => setSelectedFileForSummary(file.id)}
+                          title="View Summaries"
                         >
-                          <Brain className="h-4 w-4" />
+                          <FileText className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="secondary"
@@ -518,7 +542,7 @@ export default function Files() {
                             <BookOpen className="h-4 w-4" />
                           )}
                         </Button>
-                      </>
+                      </div>
                     )}
                     <Button
                       variant="outline"
@@ -537,11 +561,11 @@ export default function Files() {
         </div>
       )}
 
-      {/* Flashcard Viewer Modal */}
-      {selectedFileForFlashcards && (
-        <FlashcardViewer
-          fileId={selectedFileForFlashcards}
-          onClose={() => setSelectedFileForFlashcards(null)}
+      {/* Summary Viewer Modal */}
+      {selectedFileForSummary && (
+        <SummaryViewer
+          fileId={selectedFileForSummary}
+          onClose={() => setSelectedFileForSummary(null)}
         />
       )}
 
