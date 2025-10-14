@@ -3,8 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import * as pdfjsLib from 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs';
 
-// Configure worker for Deno environment
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.worker.mjs';
+// Disable worker for Deno environment - we use inline processing
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
